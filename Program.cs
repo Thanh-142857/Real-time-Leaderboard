@@ -7,6 +7,7 @@ using Real_time_Leaderboard.Services;
 using RealTimeLeaderboard.Services;
 using StackExchange.Redis;
 using System.Text;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -85,6 +86,25 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnChallenge = async context =>
+        {
+            context.HandleResponse(); // stop the default (empty) response
+            context.Response.StatusCode = 401;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(
+                JsonSerializer.Serialize(new { message = "You must be logged in to do that." }));
+        },
+        OnForbidden = async context =>
+        {
+            context.Response.StatusCode = 403;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(
+                JsonSerializer.Serialize(new { message = "You don't have permission to do that." }));
+        }
+    };
 });
 
 builder.Services.AddAuthorization();
@@ -92,7 +112,9 @@ builder.Services.AddAuthorization();
 // Auth service
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// EsmsService needs an injected HttpClient, not `new HttpClient()`
+// Score service
+builder.Services.AddScoped<IScoreService, ScoreService>();
+
 builder.Services.AddHttpClient<EsmsService>();
 
 // Redis-backed distributed cache for OTP codes

@@ -12,7 +12,7 @@ namespace Real_time_Leaderboard.Controllers
     {
         private readonly IAuthService _authService;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, IScoreService scoreService)
         {
             _authService = authService;
         }
