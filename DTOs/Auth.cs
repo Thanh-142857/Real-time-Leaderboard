@@ -22,4 +22,15 @@ namespace Real_time_Leaderboard.DTOs
         public required string PhoneNumber { get; set; }
         public required string Password { get; set; }
     }
+
+    public class SendSmsRequest
+    {
+        public required string PhoneNumber { get; set; }
+    }
+
+    public class VerifyPhoneRequest
+    {
+        public required string PhoneNumber { get; set; }
+        public required string Code { get; set; }
+    }
 }

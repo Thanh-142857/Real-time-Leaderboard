@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Real_time_Leaderboard.Models;
+using Real_time_Leaderboard.Services;
+using RealTimeLeaderboard.Services;
 using StackExchange.Redis;
 using System.Text;
-using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,7 +50,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Inside the builder setup:
-var redisConnectionString = builder.Configuration.GetConnectionString("RedisConnection") ?? throw new InvalidOperationException("Redis connection string is missing.");
+var redisConnectionString = builder.Configuration["Redis:ConnectionString"] ?? throw new InvalidOperationException("Redis connection string is missing.");
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(redisConnectionString)
 );
@@ -86,6 +88,19 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+// Auth service
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// EsmsService needs an injected HttpClient, not `new HttpClient()`
+builder.Services.AddHttpClient<EsmsService>();
+
+// Redis-backed distributed cache for OTP codes
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"];
+    options.InstanceName = "RealTimeLeaderboard:";
+});
 
 var app = builder.Build();
 
