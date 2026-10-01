@@ -3,9 +3,9 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-namespace RealTimeLeaderboard.Services
+namespace Real_time_Leaderboard.Services.impl
 {
-    public class EsmsService
+    public class EsmsService : IEsmsService
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;

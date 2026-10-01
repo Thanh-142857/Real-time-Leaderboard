@@ -2,9 +2,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Real_time_Leaderboard.Middleware;
 using Real_time_Leaderboard.Models;
 using Real_time_Leaderboard.Services;
-using RealTimeLeaderboard.Services;
+using Real_time_Leaderboard.Services.impl;
 using StackExchange.Redis;
 using System.Text;
 using System.Text.Json;
@@ -115,6 +116,10 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 // Score service
 builder.Services.AddScoped<IScoreService, ScoreService>();
 
+builder.Services.AddScoped<ILeaderboardCacheService, LeaderboardCacheService>();
+
+builder.Services.AddScoped<IEsmsService, EsmsService>();
+
 builder.Services.AddHttpClient<EsmsService>();
 
 // Redis-backed distributed cache for OTP codes
@@ -124,7 +129,19 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "RealTimeLeaderboard:";
 });
 
+// redis connection
+var multiplexer = ConnectionMultiplexer.Connect("localhost:6379");
+builder.Services.AddSingleton<IConnectionMultiplexer>(multiplexer);
+
+
+builder.Services.AddScoped<LeaderboardCacheService>();
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails(); // gives RFC 7807-style error responses
+
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

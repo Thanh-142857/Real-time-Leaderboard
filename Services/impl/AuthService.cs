@@ -4,18 +4,17 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.IdentityModel.Tokens;
 using Real_time_Leaderboard.DTOs;
 using Real_time_Leaderboard.Models;
-using RealTimeLeaderboard.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Real_time_Leaderboard.Services
+namespace Real_time_Leaderboard.Services.impl
 {
     public class AuthService : IAuthService
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
-        private readonly EsmsService _esmsService;
+        private readonly IEsmsService _esmsService;
         private readonly IDistributedCache _cache;
 
         public AuthService(
